@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan B: Strategic Acquisition Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        
+        /* Map Container */
+        #map { width: 100%; height: 100%; min-height: 500px; z-index: 1; }
+        
+        /* Custom Scrollbar for table */
+        .custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Leaflet Popup Tweaks */
+        .leaflet-popup-content-wrapper { border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 12px; }
+        .leaflet-popup-content b { color: #1e293b; font-size: 13px; }
+
+        /* Matrix Point Animation */
+        .matrix-point { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .matrix-point:hover { transform: scale(1.5); z-index: 50; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        .matrix-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; z-index: 100; }
+        .matrix-point:hover .matrix-tooltip { opacity: 1; }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-slate-800">
+
+    <!-- Header -->
+    <header class="mb-8 text-center max-w-5xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Project Plan B: Acquisition Strategy</h1>
+        <p class="text-slate-500 mt-2">Replicating LBP Functionality: River Supply + Freezing + Distribution</p>
+    </header>
+
+    <!-- 1. MAP GRAPHIC (Actual Map Base) -->
+    <section class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                Regional Node Map (All Targets)
+            </h2>
+            <div class="flex gap-4 text-xs font-semibold">
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Procurement/River</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-600"></span> Processing/Freezing</div>
+                <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-600"></span> Cold Storage Hubs</div>
+            </div>
+        </div>
+        
+        <div class="relative w-full aspect-[16/9] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden shadow-inner">
+            <!-- Leaflet Map Container -->
+            <div id="map"></div>
+            
+            <!-- Legend Overlay -->
+            <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded shadow border border-slate-200 z-[1000] text-xs">
+                <div class="font-bold mb-2 text-slate-800">FACILITY TYPES</div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500 border border-white shadow-sm"></div>
+                    <span>Procurement Node (River)</span>
+                </div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 rounded-full bg-blue-600 border border-white shadow-sm"></div>
+                    <span>Processor / Packer</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-purple-600 border border-white shadow-sm"></div>
+                    <span>Cold Storage Hub</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. FLOWCHART GRAPHIC -->
+    <section class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                Roll-Up Logic: The "Plan B" Construction
+            </h2>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-stretch justify-center gap-4 relative">
+            <!-- Connector Line for Desktop -->
+            <div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-0 transform -translate-y-1/2"></div>
+
+            <!-- Step 1: Procurement -->
+            <div class="relative z-10 flex-1 bg-white border-2 border-emerald-100 rounded-lg p-5 shadow-sm hover:border-emerald-500 transition-colors">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">INPUT 1</div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">🐟</div>
+                    <h3 class="font-bold text-slate-800">Procurement Node</h3>
+                    <p class="text-xs text-slate-500 mt-1">Simmesport / Central LA</p>
+                    <ul class="text-xs text-left mt-3 space-y-1 bg-emerald-50 p-2 rounded">
+                        <li class="flex items-center gap-2">✓ Fisherman relationships</li>
+                        <li class="flex items-center gap-2">✓ River landings access</li>
+                        <li class="flex items-center gap-2">✓ Basic Dealer Licenses</li>
+                    </ul>
+                    <div class="mt-2 text-[10px] text-slate-400 font-mono">Ex: Hwy 1 Fish Market</div>
+                </div>
+            </div>
+
+            <div class="md:self-center text-slate-300 text-2xl font-bold z-10">+</div>
+
+            <!-- Step 2: Cold Hub -->
+            <div class="relative z-10 flex-1 bg-white border-2 border-purple-100 rounded-lg p-5 shadow-sm hover:border-purple-500 transition-colors">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">INPUT 2</div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">❄️</div>
+                    <h3 class="font-bold text-slate-800">Cold Chain Hub</h3>
+                    <p class="text-xs text-slate-500 mt-1">Regional Location</p>
+                    <ul class="text-xs text-left mt-3 space-y-1 bg-purple-50 p-2 rounded">
+                        <li class="flex items-center gap-2">✓ Blast Freezing (-30°F)</li>
+                        <li class="flex items-center gap-2">✓ Seasonal Buffering</li>
+                        <li class="flex items-center gap-2">✓ Logistics Backbone</li>
+                    </ul>
+                    <div class="mt-2 text-[10px] text-slate-400 font-mono">Ex: Sub-Zero or 601 Neosho</div>
+                </div>
+            </div>
+
+            <div class="md:self-center text-slate-300 text-2xl font-bold z-10">+</div>
+
+            <!-- Step 3: Processor -->
+            <div class="relative z-10 flex-1 bg-white border-2 border-blue-100 rounded-lg p-5 shadow-sm hover:border-blue-500 transition-colors">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">INPUT 3</div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">⚙️</div>
+                    <h3 class="font-bold text-slate-800">Processor / Packer</h3>
+                    <p class="text-xs text-slate-500 mt-1">Gulf / Coastal</p>
+                    <ul class="text-xs text-left mt-3 space-y-1 bg-blue-50 p-2 rounded">
+                        <li class="flex items-center gap-2">✓ HACCP / Labor Force</li>
+                        <li class="flex items-center gap-2">✓ Distribution Channels</li>
+                        <li class="flex items-center gap-2">✓ Packing Lines (Bait/Food)</li>
+                    </ul>
+                    <div class="mt-2 text-[10px] text-slate-400 font-mono">Ex: Bayou Shrimp or C.F. Gollott</div>
+                </div>
+            </div>
+
+            <!-- Arrow Right (Desktop) / Down (Mobile) -->
+            <div class="md:self-center text-slate-400 text-3xl z-10 transform md:rotate-0 rotate-90">➔</div>
+
+            <!-- Outcome -->
+            <div class="relative z-10 flex-1 bg-slate-800 text-white rounded-lg p-5 shadow-lg ring-4 ring-slate-100">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-600 border border-slate-500 text-white text-xs font-bold px-3 py-1 rounded-full">OUTCOME</div>
+                <div class="text-center h-full flex flex-col justify-center">
+                    <h3 class="font-bold text-lg text-yellow-400">Replaced LBP Capability</h3>
+                    <div class="w-full h-px bg-slate-600 my-3"></div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-700 p-2 rounded">Bait SKUs</div>
+                        <div class="bg-slate-700 p-2 rounded">Frozen Protein</div>
+                        <div class="bg-slate-700 p-2 rounded">Inv. Buffer</div>
+                        <div class="bg-slate-700 p-2 rounded">Carp Usage</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. STRATEGY MATRIX -->
+    <section class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
+            Target Positioning Matrix
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- The Matrix Chart Container -->
+            <div class="lg:col-span-3 relative bg-slate-50 border border-slate-200 rounded-lg aspect-[4/3] lg:aspect-[16/8] p-8 overflow-hidden select-none">
+                
+                <!-- Background Quadrants -->
+                <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                    <div class="bg-emerald-50/30 border-r border-b border-slate-200/50"></div> <!-- Top Left -->
+                    <div class="bg-slate-50/30 border-b border-slate-200/50"></div> <!-- Top Right -->
+                    <div class="bg-slate-50/30 border-r border-slate-200/50"></div> <!-- Bottom Left -->
+                    <div class="bg-blue-50/30"></div> <!-- Bottom Right -->
+                </div>
+
+                <!-- Axis Labels -->
+                <div class="absolute bottom-2 right-1/2 transform translate-x-1/2 font-bold text-xs text-slate-500 uppercase tracking-widest bg-white/50 px-2 rounded">Cold Chain Capability →</div>
+                <div class="absolute left-2 top-1/2 transform -translate-y-1/2 -rotate-90 font-bold text-xs text-slate-500 uppercase tracking-widest bg-white/50 px-2 rounded">Freshwater Adjacency (River) →</div>
+
+                <!-- Quadrant Labels -->
+                <div class="absolute top-4 left-4 text-xs font-bold text-emerald-700 opacity-60">PURE RIVER NODES<br><span class="text-[9px] font-normal">High Fresh / Low Cold</span></div>
+                <div class="absolute top-4 right-4 text-xs font-bold text-purple-700 opacity-60 text-right">THE "UNICORNS"<br><span class="text-[9px] font-normal">High Fresh / High Cold</span></div>
+                <div class="absolute bottom-4 left-4 text-xs font-bold text-slate-400 opacity-60">SMALL BOLT-ONS<br><span class="text-[9px] font-normal">Low Fresh / Low Cold</span></div>
+                <div class="absolute bottom-4 right-4 text-xs font-bold text-blue-700 opacity-60 text-right">INDUSTRIAL PROCESSORS<br><span class="text-[9px] font-normal">Low Fresh / High Cold</span></div>
+
+                <!-- Center Crosshair -->
+                <div class="absolute top-0 bottom-0 left-1/2 border-l border-dashed border-slate-300 pointer-events-none"></div>
+                <div class="absolute left-0 right-0 top-1/2 border-t border-dashed border-slate-300 pointer-events-none"></div>
+
+                <!-- JS will inject points here -->
+                <div id="matrix-points-container" class="absolute inset-0 m-8 z-10"></div>
+
+            </div>
+
+            <!-- Legend Sidebar -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex flex-col justify-center gap-4">
+                <h3 class="font-bold text-sm text-slate-700 border-b pb-2">Matrix Strategy</h3>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-3 h-3 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                        <span class="text-xs font-bold">Procurement (River)</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Essential for raw material access (Carp/Buffalo). Usually lacks big freezing.</p>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-3 h-3 bg-blue-600 rounded-sm border border-white shadow-sm"></div>
+                        <span class="text-xs font-bold">Processors (Coastal)</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500">High freezing/packing capacity. Usually distant from river supply.</p>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-3 h-3 bg-purple-600 rotate-45 border border-white shadow-sm"></div>
+                        <span class="text-xs font-bold">Cold Storage Hubs</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Pure infrastructure plays for inventory buffering.</p>
+                </div>
+                <div class="bg-yellow-50 p-3 rounded border border-yellow-200 mt-2">
+                    <p class="text-[10px] font-bold text-yellow-800 uppercase mb-1">The Winning Move:</p>
+                    <p class="text-[11px] text-slate-700 leading-tight">Acquire a <span class="text-emerald-700 font-bold">Top-Left</span> node for supply, and truck product to a <span class="text-blue-700 font-bold">Bottom-Right</span> or <span class="text-purple-700 font-bold">Top-Right</span> facility for freezing.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. DASHBOARD TABLE -->
+    <section class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span>
+            Target Dashboard (Full List)
+        </h2>
+        <div class="overflow-x-auto custom-scroll" style="max-height: 600px;">
+            <table class="w-full text-left text-sm border-collapse relative">
+                <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm">
+                    <tr class="text-slate-600 uppercase text-xs tracking-wider">
+                        <th class="p-3 border-b border-slate-200">Company</th>
+                        <th class="p-3 border-b border-slate-200">Location</th>
+                        <th class="p-3 border-b border-slate-200">Category</th>
+                        <th class="p-3 border-b border-slate-200">Why It Matters</th>
+                        <th class="p-3 border-b border-slate-200">Diligence Key</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <!-- A) LOUISIANA FRESHWATER (1-6) -->
+                    <tr class="bg-slate-50"><td colspan="5" class="p-2 text-xs font-bold text-slate-500 bg-slate-100">A) LOUISIANA RIVER PROCUREMENT (The "Carp" Supply Chain)</td></tr>
+                    <tr class="hover:bg-emerald-50">
+                        <td class="p-3 font-bold text-slate-800">1. Hwy 1 Fish Market</td>
+                        <td class="p-3 text-slate-600">Simmesport, LA</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Procurement</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Surviving node in river fish economy; fisherman access.</td>
+                        <td class="p-3 text-slate-500 text-xs">Buying history consistency</td>
+                    </tr>
+                    <tr class="hover:bg-emerald-50">
+                        <td class="p-3 font-bold text-slate-800">2. Simmesport Fish Co</td>
+                        <td class="p-3 text-slate-600">Simmesport, LA</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Procurement</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Wholesale dealer node; potentially stronger than retail.</td>
+                        <td class="p-3 text-slate-500 text-xs">Ice/Freezer capacity</td>
+                    </tr>
+                    <tr class="hover:bg-emerald-50">
+                        <td class="p-3 font-bold text-slate-800">3. Coco's Seafood</td>
+                        <td class="p-3 text-slate-600">Simmesport, LA</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Procurement</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Handles "rough fish" (buffalo/gar); likely open to sale.</td>
+                        <td class="p-3 text-slate-500 text-xs">Owner willingness</td>
+                    </tr>
+                    <tr class="hover:bg-emerald-50">
+                        <td class="p-3 font-bold text-slate-800">4. Three River Fish Co</td>
+                        <td class="p-3 text-slate-600">Simmesport, LA</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Procurement</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Consolidation target; buy multiple nodes for scale.</td>
+                        <td class="p-3 text-slate-500 text-xs">Fisherman roster overlap</td>
+                    </tr>
+                    <tr class="hover:bg-emerald-50">
+                        <td class="p-3 font-bold text-slate-800">5. Bordelon's Fish Market</td>
+                        <td class="p-3 text-slate-600">Mansura, LA</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Procurement</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Central LA corridor feeder node.</td>
+                        <td class="p-3 text-slate-500 text-xs">Local market vs wholesale</td>
+                    </tr>
+                    <tr class="hover:bg-emerald-50">
+                        <td class="p-3 font-bold text-slate-800">6. J. Bernard Seafood</td>
+                        <td class="p-3 text-slate-600">Cottonport, LA</td>
+                        <td class="p-3"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">Procurement</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Wholesaler with TX distribution; future bait platform.</td>
+                        <td class="p-3 text-slate-500 text-xs">Logistics fleet age</td>
+                    </tr>
+
+                    <!-- B) PROCESSORS & FREEZERS (7-12) -->
+                    <tr class="bg-slate-50"><td colspan="5" class="p-2 text-xs font-bold text-slate-500 bg-slate-100">B) LOUISIANA HUBS & PROCESSORS</td></tr>
+                    <tr class="hover:bg-purple-50">
+                        <td class="p-3 font-bold text-slate-800">7. Baton Rouge Shrimp / Advanced Cold</td>
+                        <td class="p-3 text-slate-600">Baton Rouge, LA</td>
+                        <td class="p-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Hub / Freezer</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Central logistics + 3MM lbs storage capacity.</td>
+                        <td class="p-3 text-slate-500 text-xs">Ammonia system status</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50">
+                        <td class="p-3 font-bold text-slate-800">8. 601 Neosho Ave (Asset)</td>
+                        <td class="p-3 text-slate-600">Baton Rouge, LA</td>
+                        <td class="p-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Hub / Asset</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Asset sale: 50k SF facility, blast freezers ready-to-run.</td>
+                        <td class="p-3 text-slate-500 text-xs">Deferred maintenance</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">9. Bayou Shrimp Processors</td>
+                        <td class="p-3 text-slate-600">Delcambre, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Dock + Freezing workflow; repurpose for bait blocks.</td>
+                        <td class="p-3 text-slate-500 text-xs">Seasonality gaps</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">10. Lafitte Frozen Foods</td>
+                        <td class="p-3 text-slate-600">Lafitte, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Meaningful production scale (USDA contracts).</td>
+                        <td class="p-3 text-slate-500 text-xs">Contract dependency</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">11. Gulf Crown Seafood</td>
+                        <td class="p-3 text-slate-600">Delcambre, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Realistic mid-market operator; check freezer size.</td>
+                        <td class="p-3 text-slate-500 text-xs">Dock access rights</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">12. Ocean Select Seafood</td>
+                        <td class="p-3 text-slate-600">Cecilia, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Established compliance/scaling; value-add potential.</td>
+                        <td class="p-3 text-slate-500 text-xs">Processing line flexibility</td>
+                    </tr>
+
+                    <!-- C) SMALL BOLT-ONS (13-18) -->
+                    <tr class="bg-slate-50"><td colspan="5" class="p-2 text-xs font-bold text-slate-500 bg-slate-100">C) SMALLER BOLT-ONS (Specialized Freezing)</td></tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">13. Anna Marie Shrimp</td>
+                        <td class="p-3 text-slate-600">Montegut, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Bolt-on</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Plate-freezing/Vac-pack workflow relevant to bait.</td>
+                        <td class="p-3 text-slate-500 text-xs">Equipment age</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">14. Faith Family Shrimp</td>
+                        <td class="p-3 text-slate-600">Chauvin, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Bolt-on</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Blast freezing experience.</td>
+                        <td class="p-3 text-slate-500 text-xs">Freezer volume</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">15. David Chauvin’s Seafood</td>
+                        <td class="p-3 text-slate-600">Dulac, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Bolt-on</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Dock + Labor; verify freezer space.</td>
+                        <td class="p-3 text-slate-500 text-xs">Labor force stability</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">16. Hi-Seas of Dulac</td>
+                        <td class="p-3 text-slate-600">Dulac, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Bolt-on</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Local sourcing networks.</td>
+                        <td class="p-3 text-slate-500 text-xs">Wholesale vs Retail mix</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">17. Wilson’s Oysters</td>
+                        <td class="p-3 text-slate-600">Houma, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Bolt-on</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Cold chain assets often present in oyster houses.</td>
+                        <td class="p-3 text-slate-500 text-xs">Refrigeration vs Freezing</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">18. Motivatit Seafoods</td>
+                        <td class="p-3 text-slate-600">Houma, LA</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Bolt-on</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Evaluate capacity for frozen distribution.</td>
+                        <td class="p-3 text-slate-500 text-xs">Current operating status</td>
+                    </tr>
+
+                    <!-- D) COLD STORAGE (19-20) -->
+                    <tr class="bg-slate-50"><td colspan="5" class="p-2 text-xs font-bold text-slate-500 bg-slate-100">D) STANDALONE COLD STORAGE (Buffering)</td></tr>
+                    <tr class="hover:bg-purple-50">
+                        <td class="p-3 font-bold text-slate-800">19. Sub-Zero Storage</td>
+                        <td class="p-3 text-slate-600">Eunice, LA</td>
+                        <td class="p-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Cold Hub</span></td>
+                        <td class="p-3 text-slate-600 text-xs">50k sq ft; unlocks seasonal volume buffering immediately.</td>
+                        <td class="p-3 text-slate-500 text-xs">Blast freezing daily cap.</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50">
+                        <td class="p-3 font-bold text-slate-800">20. Riceland Crawfish</td>
+                        <td class="p-3 text-slate-600">Eunice, LA</td>
+                        <td class="p-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Vertical</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Major bait consumer; acquiring locks demand + storage.</td>
+                        <td class="p-3 text-slate-500 text-xs">Partner vs Buy</td>
+                    </tr>
+
+                    <!-- E) MISSISSIPPI (21-25) -->
+                    <tr class="bg-slate-50"><td colspan="5" class="p-2 text-xs font-bold text-slate-500 bg-slate-100">E) MISSISSIPPI (Gulf Platform Targets)</td></tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">21. C.F. Gollott & Son</td>
+                        <td class="p-3 text-slate-600">Biloxi, MS</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Platform-ready; state-of-the-art facility; scale.</td>
+                        <td class="p-3 text-slate-500 text-xs">Valuation expectations</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">22. Biloxi Freezing & Processing</td>
+                        <td class="p-3 text-slate-600">Biloxi, MS</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Strong infrastructure play; public cold storage.</td>
+                        <td class="p-3 text-slate-500 text-xs text-red-500 font-bold">HACCP/FDA Remediation</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">23. Golden Gulf Coast Packing</td>
+                        <td class="p-3 text-slate-600">Biloxi, MS</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Mid-market Gulf processor candidate.</td>
+                        <td class="p-3 text-slate-500 text-xs">Asset quality</td>
+                    </tr>
+                    <tr class="hover:bg-purple-50">
+                        <td class="p-3 font-bold text-slate-800">24. Gulf Coast Cold Storage</td>
+                        <td class="p-3 text-slate-600">Pascagoula, MS</td>
+                        <td class="p-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Cold Hub</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Pure cold-chain leverage for seasonal storage.</td>
+                        <td class="p-3 text-slate-500 text-xs">Operating status (Closed?)</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">25. Simmons Catfish</td>
+                        <td class="p-3 text-slate-600">Yazoo City, MS</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Strategic for value-add (mince/breading) capability.</td>
+                        <td class="p-3 text-slate-500 text-xs">Acquisition feasibility</td>
+                    </tr>
+
+                    <!-- F) ALABAMA (26-29) -->
+                    <tr class="bg-slate-50"><td colspan="5" class="p-2 text-xs font-bold text-slate-500 bg-slate-100">F) ALABAMA (Bayou La Batre Dock/Freezers)</td></tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">26. Dominick's Seafood</td>
+                        <td class="p-3 text-slate-600">Bayou La Batre, AL</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">20k sq ft facility; integrated dock access.</td>
+                        <td class="p-3 text-slate-500 text-xs">Dock ownership vs lease</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">27. Sea Pearl Seafood</td>
+                        <td class="p-3 text-slate-600">Bayou La Batre, AL</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Long-established processor; verify freezer footprint.</td>
+                        <td class="p-3 text-slate-500 text-xs">Willingness to pivot</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">28. Graham Shrimp Co</td>
+                        <td class="p-3 text-slate-600">Bayou La Batre, AL</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">Boat-unloading workflow adjacent to bait logistics.</td>
+                        <td class="p-3 text-slate-500 text-xs">Unloading capacity</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50">
+                        <td class="p-3 font-bold text-slate-800">29. Palmer Foods</td>
+                        <td class="p-3 text-slate-600">Bayou La Batre, AL</td>
+                        <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Processor</span></td>
+                        <td class="p-3 text-slate-600 text-xs">"Dock + Processing Plant" fits infrastructure strategy.</td>
+                        <td class="p-3 text-slate-500 text-xs">Facility age</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4 text-center">
+            <p class="text-xs text-slate-400 italic">Full list of 29 targets generated.</p>
+        </div>
+    </section>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- 1. LEAFLET MAP LOGIC ---
+            const map = L.map('map').setView([30.5, -90.0], 7); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            const colorProcurement = '#10b981'; // Emerald 500
+            const colorProcessing = '#2563eb';  // Blue 600
+            const colorColdStorage = '#9333ea'; // Purple 600
+
+            // Updated Coordinates with Actual Addresses
+            const mapLocations = [
+                // A) PROCUREMENT (Simmesport Area)
+                { name: "Hwy 1 Fish Market", lat: 30.9754, lng: -91.8032, color: colorProcurement, desc: "16515 LA-1, Simmesport" },
+                { name: "Simmesport Fish Co", lat: 30.9822, lng: -91.8150, color: colorProcurement, desc: "Main St, Simmesport" },
+                { name: "Coco's Seafood", lat: 30.9950, lng: -91.8250, color: colorProcurement, desc: "3630 LA-1, Simmesport" },
+                { name: "Three River Fish Co", lat: 30.9810, lng: -91.8130, color: colorProcurement, desc: "Simmesport Riverfront" },
+                { name: "Bordelon's Fish Market", lat: 31.0560, lng: -92.0500, color: colorProcurement, desc: "7064 LA-1, Mansura" },
+                { name: "J. Bernard Seafood", lat: 30.9877, lng: -92.0532, color: colorProcurement, desc: "1104 Front St, Cottonport" },
+
+                // B) PROCESSORS/HUBS
+                { name: "Baton Rouge Shrimp", lat: 30.4632, lng: -91.1925, color: colorColdStorage, desc: "601 Neosho Ave, Baton Rouge" },
+                { name: "601 Neosho (Asset)", lat: 30.4635, lng: -91.1928, color: colorColdStorage, desc: "Asset Sale Location" },
+                { name: "Bayou Shrimp Processors", lat: 29.9510, lng: -91.9830, color: colorProcessing, desc: "105 S Richard St, Delcambre" },
+                { name: "Gulf Crown Seafood", lat: 29.9480, lng: -91.9820, color: colorProcessing, desc: "306 S Richard St, Delcambre" },
+                { name: "Lafitte Frozen Foods", lat: 29.6640, lng: -90.1150, color: colorProcessing, desc: "5953 Jean Lafitte Blvd" },
+                { name: "Ocean Select Seafood", lat: 30.3394, lng: -91.8130, color: colorProcessing, desc: "Henderson/Cecilia Area" },
+
+                // C) SMALLER
+                { name: "Anna Marie Shrimp", lat: 29.4750, lng: -90.5600, color: colorProcessing, desc: "1011 Hwy 55, Montegut" },
+                { name: "Faith Family Shrimp", lat: 29.4350, lng: -90.5950, color: colorProcessing, desc: "5108 Bayouside Dr, Chauvin" },
+                { name: "David Chauvin's Seafood", lat: 29.3820, lng: -90.7130, color: colorProcessing, desc: "8238 Grand Caillou Rd, Dulac" },
+                { name: "Hi-Seas of Dulac", lat: 29.3870, lng: -90.7120, color: colorProcessing, desc: "8167 Grand Caillou Rd, Dulac" },
+                { name: "Wilson's Oysters", lat: 29.5850, lng: -90.7050, color: colorProcessing, desc: "1219 S Van Ave, Houma" },
+                { name: "Motivatit Seafoods", lat: 29.5950, lng: -90.7100, color: colorProcessing, desc: "416 S Van Ave, Houma" },
+
+                // D) COLD STORAGE
+                { name: "Sub-Zero Storage", lat: 30.4850, lng: -92.4600, color: colorColdStorage, desc: "Basile/Eunice Area" },
+                { name: "Riceland Crawfish", lat: 30.4950, lng: -92.4500, color: colorColdStorage, desc: "4050 W Laurel Ave, Eunice" },
+
+                // E) MISSISSIPPI
+                { name: "C.F. Gollott & Son", lat: 30.4350, lng: -88.8950, color: colorProcessing, desc: "9357 Central Ave, D'Iberville" },
+                { name: "Biloxi Freezing", lat: 30.4000, lng: -88.8900, color: colorProcessing, desc: "Biloxi Back Bay" },
+                { name: "Golden Gulf Coast", lat: 30.3950, lng: -88.8850, color: colorProcessing, desc: "Biloxi Processing District" },
+                { name: "Gulf Coast Cold Storage", lat: 30.3600, lng: -88.5600, color: colorColdStorage, desc: "Pascagoula Port Area" },
+                { name: "Simmons Catfish", lat: 32.8450, lng: -90.4600, color: colorProcessing, desc: "2986 US-49, Yazoo City" },
+
+                // F) ALABAMA (Shell Belt Rd Cluster)
+                { name: "Dominick's Seafood", lat: 30.4049, lng: -88.2560, color: colorProcessing, desc: "14975 Shell Belt Rd, Bayou La Batre" },
+                { name: "Sea Pearl Seafood", lat: 30.4030, lng: -88.2490, color: colorProcessing, desc: "14500 Shell Belt Rd, Bayou La Batre" },
+                { name: "Graham Shrimp Co", lat: 30.4020, lng: -88.2450, color: colorProcessing, desc: "14385 Shell Belt Rd, Bayou La Batre" },
+                { name: "Palmer Foods", lat: 30.4050, lng: -88.2500, color: colorProcessing, desc: "Bayou La Batre Waterfront" }
+            ];
+
+            var markers = [];
+            mapLocations.forEach(loc => {
+                var marker = L.circleMarker([loc.lat, loc.lng], {
+                    color: 'white', fillColor: loc.color, fillOpacity: 0.9, radius: 8, weight: 2
+                }).bindPopup(`<b>${loc.name}</b><br><span style="color:#64748b">${loc.desc}</span>`).addTo(map);
+                markers.push(marker);
+            });
+            var group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds(), {padding: [50, 50]});
+
+            // --- 2. MATRIX LOGIC (GENERATED) ---
+            const matrixContainer = document.getElementById('matrix-points-container');
+            
+            // Data for Matrix: X = Cold Chain (0-100), Y = Fresh/River (0-100)
+            const matrixData = [
+                // A) River Procurement (High Y, Low X)
+                { n: "Hwy 1 Fish Market", x: 15, y: 92, c: "bg-emerald-500", t: "Procurement" },
+                { n: "Simmesport Fish Co", x: 25, y: 90, c: "bg-emerald-500", t: "Procurement" },
+                { n: "Coco's Seafood", x: 18, y: 88, c: "bg-emerald-500", t: "Procurement" },
+                { n: "Three River Fish Co", x: 22, y: 85, c: "bg-emerald-500", t: "Procurement" },
+                { n: "Bordelon's Fish Market", x: 28, y: 82, c: "bg-emerald-500", t: "Procurement" },
+                { n: "J. Bernard Seafood", x: 45, y: 85, c: "bg-emerald-500", t: "Procurement (Wholesale)" },
+                
+                // B) Processors (High X, Low/Mid Y)
+                { n: "Baton Rouge Shrimp", x: 85, y: 45, c: "bg-purple-600", t: "Hub / Freezer" },
+                { n: "601 Neosho (Asset)", x: 95, y: 40, c: "bg-purple-600", t: "Hub / Asset" },
+                { n: "Bayou Shrimp Processors", x: 70, y: 20, c: "bg-blue-600", t: "Processor" },
+                { n: "Lafitte Frozen Foods", x: 78, y: 15, c: "bg-blue-600", t: "Processor" },
+                { n: "Gulf Crown Seafood", x: 68, y: 18, c: "bg-blue-600", t: "Processor" },
+                { n: "Ocean Select Seafood", x: 75, y: 35, c: "bg-blue-600", t: "Processor (Catfish)" },
+
+                // C) Small Bolt-ons (Low X, Low Y)
+                { n: "Anna Marie Shrimp", x: 40, y: 12, c: "bg-blue-400", t: "Bolt-on" },
+                { n: "Faith Family Shrimp", x: 45, y: 10, c: "bg-blue-400", t: "Bolt-on" },
+                { n: "David Chauvin's", x: 35, y: 8, c: "bg-blue-400", t: "Bolt-on" },
+                { n: "Hi-Seas of Dulac", x: 30, y: 15, c: "bg-blue-400", t: "Bolt-on" },
+                { n: "Wilson's Oysters", x: 25, y: 20, c: "bg-blue-400", t: "Bolt-on" },
+                { n: "Motivatit Seafoods", x: 50, y: 18, c: "bg-blue-400", t: "Bolt-on" },
+
+                // D) Cold Storage (Max X, Low Y)
+                { n: "Sub-Zero Storage", x: 92, y: 25, c: "bg-purple-600", t: "Cold Hub" },
+                { n: "Riceland Crawfish", x: 88, y: 28, c: "bg-purple-600", t: "Vertical Hub" },
+
+                // E) MS Processors (High X, Low Y)
+                { n: "C.F. Gollott & Son", x: 88, y: 10, c: "bg-blue-600", t: "Processor" },
+                { n: "Biloxi Freezing", x: 92, y: 8, c: "bg-blue-600", t: "Processor" },
+                { n: "Golden Gulf Coast", x: 82, y: 12, c: "bg-blue-600", t: "Processor" },
+                { n: "Gulf Coast Cold Storage", x: 98, y: 15, c: "bg-purple-600", t: "Cold Hub" },
+                // Unicorn: High X, High Y
+                { n: "Simmons Catfish", x: 85, y: 75, c: "bg-blue-600", t: "Processor (Unicorn)" },
+
+                // F) AL Processors (Mid/High X, Low Y)
+                { n: "Dominick's Seafood", x: 75, y: 5, c: "bg-blue-600", t: "Processor" },
+                { n: "Sea Pearl Seafood", x: 72, y: 8, c: "bg-blue-600", t: "Processor" },
+                { n: "Graham Shrimp Co", x: 62, y: 5, c: "bg-blue-600", t: "Processor" },
+                { n: "Palmer Foods", x: 68, y: 6, c: "bg-blue-600", t: "Processor" }
+            ];
+
+            // Render Matrix Points
+            matrixData.forEach(item => {
+                const el = document.createElement('div');
+                // Positioning
+                el.style.left = item.x + '%';
+                el.style.bottom = item.y + '%';
+                
+                // Styling
+                el.className = `absolute w-3 h-3 md:w-4 md:h-4 rounded-full border border-white shadow-sm cursor-pointer matrix-point flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 ${item.c}`;
+                
+                // Tooltip
+                el.innerHTML = `
+                    <div class="matrix-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded shadow-lg">
+                        <div class="font-bold">${item.n}</div>
+                        <div class="text-[9px] text-slate-300 italic">${item.t}</div>
+                        <div class="w-2 h-2 bg-slate-800 absolute -bottom-1 left-1/2 -translate-x-1/2 rotate-45"></div>
+                    </div>
+                `;
+                matrixContainer.appendChild(el);
+            });
+        });
+    </script>
+</body>
+</html>
