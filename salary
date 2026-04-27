@@ -1,0 +1,678 @@
+import React, { useState, useEffect } from 'react';
+import { Ship, Anchor, Wrench, ChefHat, Users, Navigation, DollarSign, Calendar, BarChart3, TrendingUp, Award, Factory, Calculator, Truck, Clock } from 'lucide-react';
+
+// --- VESSEL CREW DATA ---
+const vesselCrewMembers = [
+  { name: 'Clark Reels', perFish: 0.80, guarantee: 0.75 },
+  { name: 'Gary Smith', perFish: 0.80, guarantee: 0.75 },
+  { name: 'James Pugh', perFish: 0.80, guarantee: 0.75 },
+  { name: 'Jimmy Sanders', perFish: 0.80, guarantee: 0.75 },
+  { name: 'Joseph Martinez', perFish: 0.80, guarantee: 0.75 },
+  { name: 'Keshawn Reels', perFish: 0.80, guarantee: 0.75 },
+  { name: 'Leslie Hudnall Sr', perFish: 0.80, guarantee: 0.75 },
+  { name: 'Tyler Guidry', perFish: 0.80, guarantee: 0.75 }
+];
+
+// --- PLANT CREW DATA (From La Bait Employees.csv) ---
+const plantEmployees = [
+  { name: 'Arcelia S Castillo', hourly: 12, ot: 18, boxing: 0 },
+  { name: 'Armando Gutierrez Ochoa', hourly: 13, ot: 19.5, boxing: 0.3 },
+  { name: 'Celia Zambrano', hourly: 12, ot: 18, boxing: 0 },
+  { name: 'Dulce Urquia', hourly: 14, ot: 21, boxing: 0.3 },
+  { name: 'Fermin Espinoza Rodriguez', hourly: 12, ot: 18, boxing: 0.3 },
+  { name: 'Francisco Adel Felix Castro', hourly: 13, ot: 19.5, boxing: 0 },
+  { name: 'Heriberto Espinoza Garcia', hourly: 22, ot: 33, boxing: 0 },
+  { name: 'Jesus Fernando Xochihua-Luna', hourly: 18, ot: 27, boxing: 0 },
+  { name: 'Jesus Gabriel Jacobo Moreno', hourly: 15, ot: 22.5, boxing: 0 },
+  { name: 'Juan Antonio Olguin-Leal', hourly: 13, ot: 19.5, boxing: 0 } // Extrapolated from snippet
+];
+
+
+// --- COMMON COMPONENTS ---
+const EmployeeCard = ({ name, roleKo, roleEn, icon: Icon, payData, isMain, isPlant }) => {
+  const theme = {
+    mainBorder: isPlant ? 'border-emerald-500' : 'border-amber-400',
+    mainShadow: isPlant ? 'shadow-emerald-100/50' : 'shadow-amber-100/50',
+    mainBadgeBg: isPlant ? 'bg-emerald-100' : 'bg-amber-100',
+    mainBadgeText: isPlant ? 'text-emerald-800' : 'text-amber-800',
+    mainIconBg: isPlant ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500',
+    
+    subBorder: isPlant ? 'border-teal-500' : 'border-blue-500',
+    subShadow: isPlant ? 'shadow-teal-100/50' : 'shadow-blue-100/50',
+    subBadgeBg: isPlant ? 'bg-teal-50' : 'bg-blue-50',
+    subBadgeText: isPlant ? 'text-teal-700' : 'text-blue-700',
+    subIconBg: isPlant ? 'from-teal-500 to-teal-600' : 'from-blue-500 to-blue-600',
+  };
+
+  const currentTheme = isMain ? 
+    { border: theme.mainBorder, shadow: theme.mainShadow, badgeBg: theme.mainBadgeBg, badgeText: theme.mainBadgeText, iconBg: theme.mainIconBg } : 
+    { border: theme.subBorder, shadow: theme.subShadow, badgeBg: theme.subBadgeBg, badgeText: theme.subBadgeText, iconBg: theme.subIconBg };
+
+  return (
+    <div className={`relative flex flex-col p-6 rounded-2xl shadow-lg bg-white z-10
+      border-t-4 ${currentTheme.border} ${currentTheme.shadow}
+      transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl`}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold mb-3
+            ${currentTheme.badgeBg} ${currentTheme.badgeText}`}>
+            {isMain && <Award size={14} />}
+            {roleKo} <span className="font-medium opacity-75">| {roleEn}</span>
+          </div>
+          <h2 className="text-xl font-extrabold text-slate-800 tracking-tight leading-tight">{name}</h2>
+        </div>
+        <div className={`p-3.5 rounded-2xl shadow-inner text-white bg-gradient-to-br ${currentTheme.iconBg} flex-shrink-0 ml-2`}>
+          <Icon size={24} />
+        </div>
+      </div>
+      
+      <div className="mt-2 space-y-2.5 flex-grow">
+        {payData.map((item, index) => (
+          <div key={index} className="flex justify-between items-center text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+            <span className="text-slate-600 font-medium text-xs">{item.label}</span>
+            <span className="font-extrabold text-slate-800">{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+const Dashboard = () => {
+  const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState('vessel');
+  
+  // Vessel State
+  const [vesselRateType, setVesselRateType] = useState('actual');
+  
+  // Plant Simulator State
+  const [plantSimHours, setPlantSimHours] = useState(40);
+  const [plantSimOT, setPlantSimOT] = useState(10);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-slate-100 p-6 md:p-10 font-sans selection:bg-blue-200">
+      
+      {/* Dashboard Navigation Tabs */}
+      <div className="max-w-6xl mx-auto mb-8 flex justify-center">
+        <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 inline-flex gap-2">
+          <button 
+            onClick={() => setActiveTab('vessel')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'vessel' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <Ship size={18} />
+            선박 승무원 (Vessel Crew)
+          </button>
+          <button 
+            onClick={() => setActiveTab('plant')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'plant' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <Factory size={18} />
+            공장 직원 (Plant Crew)
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'vessel' && (
+        <div className="animate-in fade-in duration-500">
+          {/* Header Section */}
+          <div className="max-w-6xl mx-auto mb-16 text-center space-y-5">
+            <div className="inline-flex items-center justify-center space-x-2 bg-white text-blue-800 px-5 py-2.5 rounded-full font-bold text-sm shadow-sm border border-blue-100">
+              <Ship size={18} className="text-blue-600" />
+              <span className="tracking-wide uppercase">Vessel Operations Division</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight drop-shadow-sm">
+              선박 승무원 조직 및 급여 현황
+            </h1>
+            <p className="text-slate-500 font-medium text-lg flex items-center justify-center gap-2">
+              Lewis Boys Employees
+            </p>
+            <div className="flex items-center justify-center gap-3 text-sm text-slate-700 bg-white inline-flex mx-auto px-6 py-3 rounded-xl shadow-sm border border-slate-200 mt-2">
+              <Calendar size={18} className="text-blue-500" />
+              <span className="font-semibold text-slate-900">운영 기간:</span> 연중 8개월 (4월 1일 ~ 11월 1일)
+            </div>
+          </div>
+
+          {/* Organization Chart Container */}
+          <div className="max-w-[1200px] mx-auto relative">
+            
+            {/* Level 1: Captain */}
+            <div className="flex justify-center relative z-10">
+              <div className="w-full max-w-sm">
+                <EmployeeCard 
+                  name="James Kirk Mitchell"
+                  roleKo="선장"
+                  roleEn="Boat Captain"
+                  icon={Anchor}
+                  isMain={true}
+                  payData={[
+                    { label: "연봉 (Yearly Salary)", value: "$150,000" },
+                    { label: "주급 (Weekly Salary)", value: "$911.54" },
+                    { label: "실제 어획 수당 (Per Actual Fish)", value: "$2.25" }
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Connecting Lines */}
+            <div className="hidden lg:block relative h-12 z-0">
+              <div className="absolute top-0 left-1/2 w-px h-6 bg-blue-300 -ml-px"></div>
+              <div className="absolute top-6 left-[16.66%] right-[16.66%] h-px bg-blue-300"></div>
+              <div className="absolute top-6 left-[16.66%] w-px h-6 bg-blue-300"></div>
+              <div className="absolute top-6 left-1/2 w-px h-6 bg-blue-300 -ml-px"></div>
+              <div className="absolute top-6 right-[16.66%] w-px h-6 bg-blue-300"></div>
+            </div>
+            <div className="block lg:hidden h-8 w-px bg-blue-300 mx-auto"></div>
+
+            {/* Level 2: Departments */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 relative z-10">
+              
+              <div className="space-y-6">
+                <div className="bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 shadow-md">
+                  <Navigation size={18} className="text-blue-300" /> 운항 및 갑판 (Deck)
+                </div>
+                <EmployeeCard 
+                  name="Brett Mitchell"
+                  roleKo="조종사/슈터"
+                  roleEn="Pilot/Shooter"
+                  icon={Navigation}
+                  payData={[
+                    { label: "연봉 (Yearly Salary)", value: "$52,000" },
+                    { label: "주급 (Weekly Salary)", value: "$1,000" },
+                    { label: "선장 면허 (Captains License)", value: "$900" },
+                    { label: "실제 어획 (Per Actual Fish)", value: "$0.70" },
+                    { label: "보장 어획 (Guarantee Fish)", value: "$0.70" }
+                  ]}
+                />
+                <div className="flex justify-center my-2">
+                   <div className="w-px h-6 bg-slate-300"></div>
+                </div>
+                <EmployeeCard 
+                  name="Adam Moore"
+                  roleKo="갑판장"
+                  roleEn="Bosun"
+                  icon={Anchor}
+                  payData={[
+                    { label: "연봉 (Yearly Salary)", value: "$5,200" },
+                    { label: "주급 (Weekly Salary)", value: "$100" },
+                    { label: "실제 어획 (Per Actual Fish)", value: "$0.96" },
+                    { label: "보장 어획 (Guarantee Fish)", value: "$0.86" }
+                  ]}
+                />
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 shadow-md">
+                  <Wrench size={18} className="text-orange-300" /> 기관 부서 (Engineering)
+                </div>
+                <EmployeeCard 
+                  name="Carl Darbonne"
+                  roleKo="기관장"
+                  roleEn="Chief Engineer"
+                  icon={Wrench}
+                  payData={[
+                    { label: "연봉 (Yearly Salary)", value: "$78,000" },
+                    { label: "주급 (Weekly Salary)", value: "$1,500" },
+                    { label: "실제 어획 (Per Actual Fish)", value: "$0.62" }
+                  ]}
+                />
+                <div className="flex justify-center my-2">
+                   <div className="w-px h-6 bg-slate-300"></div>
+                </div>
+                <EmployeeCard 
+                  name="Darryl Peoples"
+                  roleKo="2등 기관사"
+                  roleEn="2nd Engineer"
+                  icon={Wrench}
+                  payData={[
+                    { label: "연봉 (Yearly Salary)", value: "$78,000" },
+                    { label: "주급 (Weekly Salary)", value: "$1,500" },
+                    { label: "실제 어획 (Per Actual Fish)", value: "$0.62" },
+                    { label: "보장 어획 (Guarantee Fish)", value: "$0.60" }
+                  ]}
+                />
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 shadow-md">
+                  <ChefHat size={18} className="text-emerald-300" /> 지원 부서 (Galley)
+                </div>
+                <EmployeeCard 
+                  name="Wayne Lasalle"
+                  roleKo="조리사"
+                  roleEn="Cook"
+                  icon={ChefHat}
+                  payData={[
+                    { label: "실제 어획 (Per Actual Fish)", value: "$0.85" },
+                    { label: "보장 어획 (Guarantee Fish)", value: "$0.79" }
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Crew Members Roster Section */}
+            <div className="mt-16">
+              <div className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-800 to-slate-700 py-5 px-8 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <Users size={24} className="text-white" />
+                    </div>
+                    <h3 className="font-extrabold text-white text-xl">일반 선원 명부 (Crew Roster)</h3>
+                  </div>
+                  <div className="bg-white/10 px-4 py-1.5 rounded-full text-white font-semibold text-sm border border-white/20">
+                    총 {vesselCrewMembers.length}명
+                  </div>
+                </div>
+                
+                <div className="p-8 bg-slate-50/50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {vesselCrewMembers.map((crew, idx) => (
+                      <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0">
+                          {crew.name.charAt(0)}
+                        </div>
+                        <div className="flex-grow min-w-0">
+                          <h4 className="font-bold text-slate-800 truncate mb-1 text-sm">{crew.name}</h4>
+                          <div className="flex gap-2 text-[10px] text-slate-500">
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded">실제: <strong className="text-slate-700">${crew.perFish.toFixed(2)}</strong></span>
+                            <span className="bg-slate-100 px-1.5 py-0.5 rounded">보장: <strong className="text-slate-700">${crew.guarantee.toFixed(2)}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Salary & Catch Bonus Scenario Simulator (MT Base) */}
+            <div className="mt-20 bg-white p-8 rounded-3xl shadow-lg border border-slate-100">
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-4 mb-3">
+                    <h3 className="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+                      <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                        <Calculator size={24} /> 
+                      </div>
+                      시즌 총 급여 시뮬레이터 (선박)
+                    </h3>
+                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                      <button 
+                        onClick={() => setVesselRateType('actual')}
+                        className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${vesselRateType === 'actual' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        실제 단가 (Actual)
+                      </button>
+                      <button 
+                        onClick={() => setVesselRateType('guarantee')}
+                        className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${vesselRateType === 'guarantee' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        보장 단가 (Guarantee)
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                    <strong>총 급여 = 1인 기본급 + 어획 수당(MT 기준)</strong><br/>
+                    <span className="text-slate-400">1 MT &approx; 6.613 Units / 현재 [{vesselRateType === 'actual' ? '실제 어획 단가' : '최소 보장 단가'}] 기준 적용 중</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-slate-600 uppercase bg-slate-100 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-5 font-extrabold whitespace-nowrap">직급 (Role)</th>
+                      <th className="px-4 py-5 font-extrabold text-center whitespace-nowrap">인원 (Count)</th>
+                      <th className="px-4 py-5 font-extrabold text-center whitespace-nowrap">단가</th>
+                      <th className="px-4 py-5 font-extrabold text-center border-r border-slate-200 whitespace-nowrap">1인 기본급</th>
+                      <th className="px-6 py-5 font-bold text-right min-w-[120px]">4,000 MT</th>
+                      <th className="px-6 py-5 font-bold text-right min-w-[120px]">6,000 MT</th>
+                      <th className="px-6 py-5 font-bold text-right bg-blue-50/50 min-w-[120px]">8,000 MT</th>
+                      <th className="px-6 py-5 font-bold text-right bg-blue-50/50 min-w-[120px]">10,000 MT</th>
+                      <th className="px-6 py-5 font-bold text-right bg-blue-100/50 min-w-[120px]">12,000 MT</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {(() => {
+                      const rolesData = [
+                        { role: '선장 (Captain)', rate: 2.25, guarantee: 2.25, base: 150000, count: 1, isHighlight: true },
+                        { role: '기관장 (Chief Engineer)', rate: 0.62, guarantee: 0.62, base: 78000, count: 1 },
+                        { role: '2등 기관사 (2nd)', rate: 0.62, guarantee: 0.60, base: 78000, count: 1 },
+                        { role: '조종사/슈터 (Pilot)', rate: 0.70, guarantee: 0.70, base: 52000, count: 1 },
+                        { role: '갑판장 (Bosun)', rate: 0.96, guarantee: 0.86, base: 5200, count: 1 },
+                        { role: '조리사 (Cook)', rate: 0.85, guarantee: 0.79, base: 0, count: 1 },
+                        { role: '일반 선원 (Crew)', rate: 0.80, guarantee: 0.75, base: 0, count: vesselCrewMembers.length },
+                      ];
+
+                      const scenarios = [4000, 6000, 8000, 10000, 12000];
+                      const totalCrewCount = rolesData.reduce((acc, row) => acc + row.count, 0);
+                      const totalBaseSalary = rolesData.reduce((acc, row) => acc + (row.base * row.count), 0);
+
+                      return (
+                        <>
+                          {rolesData.map((row, idx) => {
+                            const activeRate = vesselRateType === 'actual' ? row.rate : row.guarantee;
+                            return (
+                              <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                <td className={`px-6 py-4 font-bold whitespace-nowrap ${row.isHighlight ? 'text-indigo-600' : 'text-slate-700'}`}>{row.role}</td>
+                                <td className="px-4 py-4 text-center font-bold text-slate-500 bg-slate-50/50">{row.count}명</td>
+                                <td className="px-4 py-4 text-center font-bold text-slate-500">${activeRate.toFixed(2)}</td>
+                                <td className="px-4 py-4 text-center font-bold text-slate-500 border-r border-slate-100">${row.base.toLocaleString()}</td>
+                                {scenarios.map((mt, i) => {
+                                  const units = mt * 6.61386; 
+                                  const bonus = units * activeRate;
+                                  const total = row.base + bonus;
+                                  return (
+                                    <td key={i} className={`px-6 py-3 text-right ${i >= 2 ? (i >= 4 ? 'bg-blue-100/20' : 'bg-blue-50/20') : ''}`}>
+                                      <div className={`font-extrabold text-base ${row.isHighlight ? 'text-indigo-700' : 'text-slate-800'}`}>${Math.round(total).toLocaleString()}</div>
+                                      <div className="text-[10px] font-semibold text-slate-400 mt-0.5">수당: ${Math.round(bonus).toLocaleString()}</div>
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            )
+                          })}
+                          <tr className="bg-slate-800 text-white shadow-inner">
+                            <td className="px-6 py-6 font-black text-lg whitespace-nowrap text-blue-300">총 인건비 합계</td>
+                            <td className="px-4 py-6 text-center font-bold text-blue-200">{totalCrewCount}명</td>
+                            <td className="px-4 py-6 text-center font-bold text-slate-400">-</td>
+                            <td className="px-4 py-6 text-center font-extrabold border-r border-slate-600 text-white">${totalBaseSalary.toLocaleString()}</td>
+                            {scenarios.map((mt, i) => {
+                              const grandTotal = rolesData.reduce((acc, row) => {
+                                const activeRate = vesselRateType === 'actual' ? row.rate : row.guarantee;
+                                const units = mt * 6.61386;
+                                const totalPerRow = (row.base + (units * activeRate)) * row.count;
+                                return acc + totalPerRow;
+                              }, 0);
+                              return (
+                                <td key={i} className={`px-6 py-5 text-right ${i >= 2 ? (i >= 4 ? 'bg-blue-900/40' : 'bg-blue-900/20') : ''}`}>
+                                  <div className="font-black text-xl text-yellow-400 drop-shadow-md">${Math.round(grandTotal).toLocaleString()}</div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        </>
+                      );
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'plant' && (
+        <div className="animate-in fade-in duration-500">
+          {/* Plant Header Section */}
+          <div className="max-w-6xl mx-auto mb-16 text-center space-y-5">
+            <div className="inline-flex items-center justify-center space-x-2 bg-white text-emerald-800 px-5 py-2.5 rounded-full font-bold text-sm shadow-sm border border-emerald-100">
+              <Factory size={18} className="text-emerald-600" />
+              <span className="tracking-wide uppercase">Plant Operations Division</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight drop-shadow-sm">
+              공장 직원 조직 및 급여 현황
+            </h1>
+            <p className="text-slate-500 font-medium text-lg flex items-center justify-center gap-2">
+              Louisiana Bait Products Employees
+            </p>
+          </div>
+
+          {/* Organization Chart Container */}
+          <div className="max-w-[1200px] mx-auto relative">
+            
+            {/* Level 1: Plant Manager */}
+            <div className="flex justify-center relative z-10">
+              <div className="w-full max-w-sm">
+                <EmployeeCard 
+                  name="Shawn Switzer"
+                  roleKo="공장 매니저"
+                  roleEn="Plant Manager"
+                  icon={Award}
+                  isMain={true}
+                  isPlant={true}
+                  payData={[
+                    { label: "기본 연봉 (Base Salary)", value: "$90,000" },
+                    { label: "추가 보너스 (Est. Bonus)", value: "$20,000" },
+                    { label: "총 예상 연봉 (Total Est.)", value: "$110,000" }
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Connecting Lines */}
+            <div className="hidden lg:block relative h-12 z-0">
+              <div className="absolute top-0 left-1/2 w-px h-6 bg-emerald-300 -ml-px"></div>
+              <div className="absolute top-6 left-[16.66%] right-[16.66%] h-px bg-emerald-300"></div>
+              <div className="absolute top-6 left-[16.66%] w-px h-6 bg-emerald-300"></div>
+              <div className="absolute top-6 left-1/2 w-px h-6 bg-emerald-300 -ml-px"></div>
+              <div className="absolute top-6 right-[16.66%] w-px h-6 bg-emerald-300"></div>
+            </div>
+            <div className="block lg:hidden h-8 w-px bg-emerald-300 mx-auto"></div>
+
+            {/* Level 2: Sub Divisions */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 relative z-10 max-w-5xl mx-auto">
+              
+              {/* Office */}
+              <div className="space-y-6">
+                <div className="bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 shadow-md">
+                  <Users size={18} className="text-emerald-300" /> 사무실 (Office)
+                </div>
+                <EmployeeCard 
+                  name="Samantha Tucker"
+                  roleKo="사무 관리"
+                  roleEn="Office Admin"
+                  icon={Users}
+                  isPlant={true}
+                  payData={[
+                    { label: "고정 연봉 (Yearly Salary)", value: "$57,500" }
+                  ]}
+                />
+              </div>
+
+              {/* Trucking */}
+              <div className="space-y-6">
+                <div className="bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 shadow-md">
+                  <Truck size={18} className="text-emerald-300" /> 운송 부서 (Trucking of Bait)
+                </div>
+                <EmployeeCard 
+                  name="James M Defelice II"
+                  roleKo="운송 담당 (1099)"
+                  roleEn="Trucking (Contractor)"
+                  icon={Truck}
+                  isPlant={true}
+                  payData={[
+                    { label: "기본 시급 (Hourly)", value: "$75.00 / hr" },
+                    { label: "고용 형태", value: "1099 독립 계약자" }
+                  ]}
+                />
+              </div>
+
+              {/* Plant Floor Overview */}
+              <div className="space-y-6">
+                <div className="bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 shadow-md">
+                  <Factory size={18} className="text-emerald-300" /> 생산 현장 (Plant Floor)
+                </div>
+                
+                <div className="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-emerald-500 flex flex-col h-full justify-center text-center">
+                  <Users size={32} className="mx-auto text-emerald-500 mb-3" />
+                  <h3 className="text-xl font-bold text-slate-800 mb-2">일반 공장 직원</h3>
+                  <p className="text-slate-500 text-sm mb-4">Fish Boxing 및 일반 생산 업무</p>
+                  <div className="bg-emerald-50 text-emerald-800 font-extrabold py-2 px-4 rounded-lg inline-block mx-auto text-lg">
+                    총 {plantEmployees.length} 명
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Plant Employees Roster Section */}
+            <div className="mt-16">
+              <div className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-800 to-emerald-700 py-5 px-8 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <Users size={24} className="text-white" />
+                    </div>
+                    <h3 className="font-extrabold text-white text-xl">공장 직원 명부 및 시급 상세 (Plant Roster)</h3>
+                  </div>
+                </div>
+                
+                <div className="p-8 bg-slate-50/50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {plantEmployees.map((emp, idx) => (
+                      <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all duration-200">
+                        <h4 className="font-bold text-slate-800 mb-3 pb-2 border-b border-slate-100">{emp.name}</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">기본 시급 (Hourly)</span>
+                            <span className="font-bold text-slate-800">${emp.hourly.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">초과 근무 (OT x1.5)</span>
+                            <span className="font-bold text-emerald-600">${emp.ot.toFixed(2)}</span>
+                          </div>
+                          {emp.boxing > 0 && (
+                            <div className="flex justify-between items-center pt-1 border-t border-dashed border-slate-100">
+                              <span className="text-slate-500">Fish Boxing 수당</span>
+                              <span className="font-bold text-indigo-600">+${emp.boxing.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Plant Hourly Cost Simulator */}
+            <div className="mt-20 bg-white p-8 rounded-3xl shadow-lg border border-slate-100">
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-4">
+                <div>
+                  <h3 className="text-2xl font-extrabold text-slate-800 flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                      <Clock size={24} /> 
+                    </div>
+                    주간 인건비 시뮬레이터 (공장 운영 시간 기준)
+                  </h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                    공장 가동 시간에 따른 <strong className="text-slate-700">공장 직원 {plantEmployees.length}명</strong>의 예상 주간 인건비입니다.<br/>
+                    <span className="text-slate-400">※ 운송(Trucking) 및 사무직(Shawn, Samantha) 고정 급여는 제외된 순수 생산 라인 근로자 인건비입니다. / Fish Boxing 수당은 별도 합산.</span>
+                  </p>
+                </div>
+
+                <div className="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-inner">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">정규 시간 (Hours/Wk)</label>
+                    <input 
+                      type="number" 
+                      value={plantSimHours} 
+                      onChange={(e) => setPlantSimHours(Number(e.target.value) || 0)}
+                      className="w-24 px-3 py-2 rounded-lg border border-slate-300 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">OT 시간 (Overtime)</label>
+                    <input 
+                      type="number" 
+                      value={plantSimOT} 
+                      onChange={(e) => setPlantSimOT(Number(e.target.value) || 0)}
+                      className="w-24 px-3 py-2 rounded-lg border border-slate-300 font-bold text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-slate-600 uppercase bg-slate-100 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-4 font-extrabold">직원명 (Employee)</th>
+                      <th className="px-4 py-4 font-bold text-right border-r border-slate-200">단가 (Hourly / OT)</th>
+                      <th className="px-6 py-4 font-bold text-right">정규 급여 ({plantSimHours}h)</th>
+                      <th className="px-6 py-4 font-bold text-right text-emerald-600">OT 급여 ({plantSimOT}h)</th>
+                      <th className="px-6 py-4 font-extrabold text-right bg-emerald-50 text-slate-800">예상 주급 합계</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {plantEmployees.map((emp, idx) => {
+                      const regularPay = emp.hourly * plantSimHours;
+                      const otPay = emp.ot * plantSimOT;
+                      const weeklyTotal = regularPay + otPay;
+                      
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="px-6 py-3 font-medium text-slate-700">{emp.name}</td>
+                          <td className="px-4 py-3 text-right text-slate-400 border-r border-slate-200">
+                            ${emp.hourly.toFixed(2)} / <span className="text-emerald-500">${emp.ot.toFixed(2)}</span>
+                          </td>
+                          <td className="px-6 py-3 text-right font-medium">${regularPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                          <td className="px-6 py-3 text-right font-medium text-emerald-600">${otPay.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                          <td className="px-6 py-3 text-right font-bold bg-emerald-50/50 text-slate-800">${weeklyTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        </tr>
+                      )
+                    })}
+                    
+                    {/* Plant Grand Total */}
+                    {(() => {
+                      const totalRegular = plantEmployees.reduce((sum, emp) => sum + (emp.hourly * plantSimHours), 0);
+                      const totalOT = plantEmployees.reduce((sum, emp) => sum + (emp.ot * plantSimOT), 0);
+                      const lineTotal = totalRegular + totalOT;
+                      
+                      const shawnYearly = 110000; // 90k Base + 20k Bonus
+                      const samanthaYearly = 57500;
+                      const totalFixedWeekly = (shawnYearly + samanthaYearly) / 52; // 연봉을 주간 비용으로 환산
+                      
+                      const grandTotal = lineTotal + totalFixedWeekly;
+                      const monthlyEst = grandTotal * 4.33; // 평균 월간 주수 곱하기
+
+                      return (
+                        <>
+                          <tr className="bg-slate-50/80">
+                            <td colSpan="4" className="px-6 py-4 text-right font-bold text-slate-600">생산 라인 근로자 주급 합계 (Line Workers)</td>
+                            <td className="px-6 py-4 text-right font-bold text-slate-800">${lineTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                          </tr>
+                          <tr className="bg-slate-50/80 border-b-2 border-emerald-200">
+                            <td colSpan="4" className="px-6 py-4 text-right font-bold text-slate-600">고정 인건비 주간 환산 (Fixed: Manager & Office)</td>
+                            <td className="px-6 py-4 text-right font-bold text-slate-800">${totalFixedWeekly.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                          </tr>
+                          <tr className="bg-slate-800 text-white">
+                            <td colSpan="2" className="px-6 py-5 font-black text-lg text-emerald-300 text-right">
+                              공장 총 주간 인건비 (Grand Total)
+                            </td>
+                            <td className="px-6 py-5 text-right font-bold">${totalRegular.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                            <td className="px-6 py-5 text-right font-bold text-emerald-400">${totalOT.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                            <td className="px-6 py-5 text-right">
+                              <div className="font-black text-xl text-yellow-400 drop-shadow-md">
+                                ${grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                              </div>
+                              <div className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wide">
+                                월간(Monthly) 예상: <span className="text-slate-300">${monthlyEst.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        </>
+                      );
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default Dashboard;
